@@ -26,7 +26,7 @@ jobs:
           sudo apt-get install -y patch
           mkdir -p bin
           curl -L https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/linux/apktool -o bin/apktool
-          curl -L https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.12.1.jar -o bin/apktool.jar
+          curl -L https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_3.0.2.jar -o bin/apktool.jar
           chmod +x bin/apktool bin/apktool.jar
           curl -L "https://github.com/lexiforest/curl-impersonate/releases/download/v1.4.1/curl-impersonate-v1.4.1.x86_64-linux-gnu.tar.gz" -o curl.tar.gz
           tar -zxvf curl.tar.gz -C ./bin
