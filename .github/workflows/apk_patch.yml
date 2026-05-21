@@ -62,15 +62,6 @@ jobs:
                               out/patch/ProxyDocumentsProvider.class
           rm -rf out
 
-      - name: Setup API 36 Framework and aapt2
-        run: |
-          java -jar bin/apktool.jar if $ANDROID_HOME/platforms/android-36/android.jar
-          ORIGINAL_AAPT2=$(find $ANDROID_HOME/build-tools -name "aapt2" | sort -V | tail -n 1)
-          cp "$ORIGINAL_AAPT2" ./bin/aapt2
-          chmod +x ./bin/aapt2
-          echo "AAPT2_PATH=$GITHUB_WORKSPACE/bin/aapt2" >> $GITHUB_ENV
-          echo "Using aapt2 at: $GITHUB_WORKSPACE/bin/aapt2"
-
       - name: Decompile APK
         run: apktool d -s original.apk -o decompiled_source
 
@@ -83,35 +74,11 @@ jobs:
         run: |
           PROVIDER_BLOCK="<provider ${{ env.NS_PREFIX }}:name=\"patch.ProxyDocumentsProvider\" ${{ env.NS_PREFIX }}:permission=\"android.permission.MANAGE_DOCUMENTS\" ${{ env.NS_PREFIX }}:exported=\"true\" ${{ env.NS_PREFIX }}:authorities=\"${{ env.PKG_NAME }}.ProxyDocumentsProvider\" ${{ env.NS_PREFIX }}:grantUriPermissions=\"true\"><intent-filter><action ${{ env.NS_PREFIX }}:name=\"android.content.action.DOCUMENTS_PROVIDER\" /></intent-filter></provider>"
           sed -i "/<\/application>/i $PROVIDER_BLOCK" decompiled_source/AndroidManifest.xml
-
-      - name: Fix AAPT2 Invalid Resource Names
-        run: |
-          cat << 'EOF' > fix_res.py
-          import os, re
-          res_dir = 'decompiled_source/res'
-          for root, _, files in os.walk(res_dir):
-              for f in files:
-                  old_path = os.path.join(root, f)
-                  if '$' in f:
-                      new_path = os.path.join(root, f.replace('$', '_'))
-                      os.rename(old_path, new_path)
-                  if f.endswith('.xml'):
-                      path = os.path.join(root, f.replace('$', '_') if '$' in f else f)
-                      with open(path, 'r', encoding='utf-8') as file:
-                          c = file.read()
-                      orig_c = c
-                      for _ in range(10):
-                          c = re.sub(r'(@[a-zA-Z]+/[^\s"<>]*?)\$', r'\1_', c)
-                          c = re.sub(r'(name="[^\s"<>]*?)\$', r'\1_', c)
-                      if c != orig_c:
-                          with open(path, 'w', encoding='utf-8') as file:
-                              file.write(c)
-          EOF
-          python3 fix_res.py
-          rm fix_res.py
+          sed -i 's/android:zygotePreloadNativeLib="[^"]*"//g' decompiled_source/AndroidManifest.xml
+          sed -i 's/android:nativeService="[^"]*"//g' decompiled_source/AndroidManifest.xml
 
       - name: Build Modified Manifest
-        run: apktool b --aapt ${{ env.AAPT2_PATH }} decompiled_source -o modified_temp.apk
+        run: apktool b decompiled_source -o modified_temp.apk
 
       - name: Extract Manifest and Cleanup
         run: |
