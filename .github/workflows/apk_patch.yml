@@ -32,6 +32,18 @@ jobs:
           tar -zxvf curl.tar.gz -C ./bin
           echo "$GITHUB_WORKSPACE/bin" >> $GITHUB_PATH
 
+      - name: Install Android 16 Framework for Apktool
+        run: |
+          FRAMEWORK_JAR="$ANDROID_HOME/platforms/android-36/android.jar"
+          if [ -f "$FRAMEWORK_JAR" ]; then
+            echo "Installing Android 16 (API 36) framework into Apktool..."
+            java -jar bin/apktool.jar if "$FRAMEWORK_JAR"
+          else
+            echo "Warning: android-36 not found, falling back to latest available platform"
+            LATEST_JAR=$(find $ANDROID_HOME/platforms -name "android.jar" | sort -V | tail -n 1)
+            java -jar bin/apktool.jar if "$LATEST_JAR"
+          fi
+
       - name: Download APK
         run: |
           curl_chrome142 -L "https://github.com/uazo/cromite/releases/latest/download/arm64_ChromePublic.apk" -o original.apk
@@ -76,12 +88,10 @@ jobs:
           sed -i "/<\/application>/i $PROVIDER_BLOCK" decompiled_source/AndroidManifest.xml
 
       - name: Build Modified Manifest
+        run: apktool b decompiled_source -o modified_temp.apk
+
+      - name: Extract Manifest and Cleanup
         run: |
-          BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/* | tail -1)
-          $BUILD_TOOLS_DIR/aapt2 link \
-            -I "$ANDROID_HOME/platforms/android-36/android.jar" \
-            --manifest decompiled_source/AndroidManifest.xml \
-            -o modified_temp.apk
           unzip -p modified_temp.apk AndroidManifest.xml > AndroidManifest.xml
           rm -rf decompiled_source modified_temp.apk
 
@@ -132,3 +142,4 @@ jobs:
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
