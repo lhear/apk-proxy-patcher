@@ -84,6 +84,16 @@ jobs:
           PROVIDER_BLOCK="<provider ${{ env.NS_PREFIX }}:name=\"patch.ProxyDocumentsProvider\" ${{ env.NS_PREFIX }}:permission=\"android.permission.MANAGE_DOCUMENTS\" ${{ env.NS_PREFIX }}:exported=\"true\" ${{ env.NS_PREFIX }}:authorities=\"${{ env.PKG_NAME }}.ProxyDocumentsProvider\" ${{ env.NS_PREFIX }}:grantUriPermissions=\"true\"><intent-filter><action ${{ env.NS_PREFIX }}:name=\"android.content.action.DOCUMENTS_PROVIDER\" /></intent-filter></provider>"
           sed -i "/<\/application>/i $PROVIDER_BLOCK" decompiled_source/AndroidManifest.xml
 
+      - name: Fix AAPT2 Invalid Resource Names
+        run: |
+          find decompiled_source/res -name "*\$*" -type f | while read -r file; do
+              new_file="${file//\$/__}"
+              mv -v "$file" "$new_file"
+          done
+          find decompiled_source/res -name "*.xml" -type f -exec sed -i 's/@drawable\/\$/@drawable\/__/g' {} +
+          find decompiled_source/res -name "*.xml" -type f -exec sed -i 's/@mipmap\/\$/@mipmap\/__/g' {} +
+          find decompiled_source/res -name "*.xml" -type f -exec sed -i 's/@anim\/\$/@anim\/__/g' {} +
+
       - name: Build Modified Manifest
         run: apktool b --aapt ${{ env.AAPT2_PATH }} decompiled_source -o modified_temp.apk
 
