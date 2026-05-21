@@ -65,9 +65,11 @@ jobs:
       - name: Setup API 36 Framework and aapt2
         run: |
           java -jar bin/apktool.jar if $ANDROID_HOME/platforms/android-36/android.jar
-          AAPT2_PATH=$(find $ANDROID_HOME/build-tools -name "aapt2" | sort -V | tail -n 1)
-          echo "AAPT2_PATH=$AAPT2_PATH" >> $GITHUB_ENV
-          echo "Using aapt2 at: $AAPT2_PATH"
+          ORIGINAL_AAPT2=$(find $ANDROID_HOME/build-tools -name "aapt2" | sort -V | tail -n 1)
+          cp "$ORIGINAL_AAPT2" ./bin/aapt2
+          chmod +x ./bin/aapt2
+          echo "AAPT2_PATH=$GITHUB_WORKSPACE/bin/aapt2" >> $GITHUB_ENV
+          echo "Using aapt2 at: $GITHUB_WORKSPACE/bin/aapt2"
 
       - name: Decompile APK
         run: apktool d -s original.apk -o decompiled_source
