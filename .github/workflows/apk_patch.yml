@@ -74,8 +74,8 @@ jobs:
         run: |
           PROVIDER_BLOCK="<provider ${{ env.NS_PREFIX }}:name=\"patch.ProxyDocumentsProvider\" ${{ env.NS_PREFIX }}:permission=\"android.permission.MANAGE_DOCUMENTS\" ${{ env.NS_PREFIX }}:exported=\"true\" ${{ env.NS_PREFIX }}:authorities=\"${{ env.PKG_NAME }}.ProxyDocumentsProvider\" ${{ env.NS_PREFIX }}:grantUriPermissions=\"true\"><intent-filter><action ${{ env.NS_PREFIX }}:name=\"android.content.action.DOCUMENTS_PROVIDER\" /></intent-filter></provider>"
           sed -i "/<\/application>/i $PROVIDER_BLOCK" decompiled_source/AndroidManifest.xml
-          sed -i 's/android:zygotePreloadNativeLib="[^"]*"//g' decompiled_source/AndroidManifest.xml
-          sed -i 's/android:nativeService="[^"]*"//g' decompiled_source/AndroidManifest.xml
+          sed -i -E 's/[[:space:]]+[a-zA-Z0-9_]+:zygotePreloadNativeLib="[^"]*"//g' decompiled_source/AndroidManifest.xml
+          sed -i -E 's/[[:space:]]+[a-zA-Z0-9_]+:nativeService="[^"]*"//g' decompiled_source/AndroidManifest.xml
 
       - name: Build Modified Manifest
         run: apktool b decompiled_source -o modified_temp.apk
