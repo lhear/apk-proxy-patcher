@@ -86,13 +86,29 @@ jobs:
 
       - name: Fix AAPT2 Invalid Resource Names
         run: |
-          find decompiled_source/res -name "*\$*" -type f | while read -r file; do
-              new_file="${file//\$/__}"
-              mv -v "$file" "$new_file"
-          done
-          find decompiled_source/res -name "*.xml" -type f -exec sed -i 's/@drawable\/\$/@drawable\/__/g' {} +
-          find decompiled_source/res -name "*.xml" -type f -exec sed -i 's/@mipmap\/\$/@mipmap\/__/g' {} +
-          find decompiled_source/res -name "*.xml" -type f -exec sed -i 's/@anim\/\$/@anim\/__/g' {} +
+          cat << 'EOF' > fix_res.py
+          import os, re
+          res_dir = 'decompiled_source/res'
+          for root, _, files in os.walk(res_dir):
+              for f in files:
+                  old_path = os.path.join(root, f)
+                  if '$' in f:
+                      new_path = os.path.join(root, f.replace('$', '_'))
+                      os.rename(old_path, new_path)
+                  if f.endswith('.xml'):
+                      path = os.path.join(root, f.replace('$', '_') if '$' in f else f)
+                      with open(path, 'r', encoding='utf-8') as file:
+                          c = file.read()
+                      orig_c = c
+                      for _ in range(10):
+                          c = re.sub(r'(@[a-zA-Z]+/[^\s"<>]*?)\$', r'\1_', c)
+                          c = re.sub(r'(name="[^\s"<>]*?)\$', r'\1_', c)
+                      if c != orig_c:
+                          with open(path, 'w', encoding='utf-8') as file:
+                              file.write(c)
+          EOF
+          python3 fix_res.py
+          rm fix_res.py
 
       - name: Build Modified Manifest
         run: apktool b --aapt ${{ env.AAPT2_PATH }} decompiled_source -o modified_temp.apk
