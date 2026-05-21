@@ -32,18 +32,6 @@ jobs:
           tar -zxvf curl.tar.gz -C ./bin
           echo "$GITHUB_WORKSPACE/bin" >> $GITHUB_PATH
 
-      - name: Install Android 16 Framework for Apktool
-        run: |
-          FRAMEWORK_JAR="$ANDROID_HOME/platforms/android-36/android.jar"
-          if [ -f "$FRAMEWORK_JAR" ]; then
-            echo "Installing Android 16 (API 36) framework into Apktool..."
-            java -jar bin/apktool.jar if "$FRAMEWORK_JAR"
-          else
-            echo "Warning: android-36 not found, falling back to latest available platform"
-            LATEST_JAR=$(find $ANDROID_HOME/platforms -name "android.jar" | sort -V | tail -n 1)
-            java -jar bin/apktool.jar if "$LATEST_JAR"
-          fi
-
       - name: Download APK
         run: |
           curl_chrome142 -L "https://github.com/uazo/cromite/releases/latest/download/arm64_ChromePublic.apk" -o original.apk
@@ -73,6 +61,13 @@ jobs:
                               --output ./ \
                               out/patch/ProxyDocumentsProvider.class
           rm -rf out
+
+      - name: Setup API 36 Framework and aapt2
+        run: |
+          java -jar bin/apktool.jar if $ANDROID_HOME/platforms/android-36/android.jar
+          AAPT2_PATH=$(find $ANDROID_HOME/build-tools -name "aapt2" | sort -V | tail -n 1)
+          echo "AAPT2_PATH=$AAPT2_PATH" >> $GITHUB_ENV
+          echo "Using aapt2 at: $AAPT2_PATH"
 
       - name: Decompile APK
         run: apktool d -s original.apk -o decompiled_source
