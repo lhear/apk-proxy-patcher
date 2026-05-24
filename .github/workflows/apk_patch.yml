@@ -34,7 +34,7 @@ jobs:
 
       - name: Download APK
         run: |
-          curl_chrome142 -L -O "https://f-droid.org/repo/org.mozilla.fennec_fdroid_$(curl_chrome142 -s https://f-droid.org/api/v1/packages/org.mozilla.fennec_fdroid | grep -o '"suggestedVersionCode":[0-9]*' | cut -d':' -f2).apk" -o original.apk
+          curl_chrome142 -L "https://f-droid.org/repo/org.mozilla.fennec_fdroid_$(curl_chrome142 -s https://f-droid.org/api/v1/packages/org.mozilla.fennec_fdroid | grep -o '"suggestedVersionCode":[0-9]*' | cut -d':' -f2).apk" -o original.apk
 
       - name: Download Proxy Lib
         run: |
