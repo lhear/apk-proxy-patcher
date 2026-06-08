@@ -35,7 +35,7 @@ public class ProxyDocumentsProvider extends DocumentsProvider {
                 android.util.Log.e("ProxyError", line);
             }
         } catch (Exception e) {
-            android.util.Log.e("ProxyError", e);
+            android.util.Log.e("ProxyError", "Exception", e);
         }
         super.attachInfo(context, info);
     }
