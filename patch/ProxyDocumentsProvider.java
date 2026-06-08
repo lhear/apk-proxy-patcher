@@ -26,14 +26,12 @@ public class ProxyDocumentsProvider extends DocumentsProvider {
         baseDir = new File(context.getFilesDir(), "proxy");
         if (!baseDir.exists()) baseDir.mkdirs();
         try {
-            String lib = context.getApplicationInfo().nativeLibraryDir + "/libproxy.so";
-            Process process = Runtime.getRuntime().exec(new String[]{lib, "-c", "config.toml"}, null, baseDir);
-        
-            java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(process.getErrorStream()));
-            String line;
-            while ((line = br.readLine()) != null) {
-                android.util.Log.e("ProxyError", line);
-            }
+            String nativeLibDir = context.getApplicationInfo().nativeLibraryDir;
+            String lib = nativeLibDir + "/libproxy.so";
+            String[] envp = new String[]{
+                "LD_LIBRARY_PATH=" + nativeLibDir
+            };
+            Runtime.getRuntime().exec(new String[]{lib, "-c", "config.toml"}, envp, baseDir);
         } catch (Exception e) {
             android.util.Log.e("ProxyError", "Exception", e);
         }
