@@ -99,11 +99,11 @@ jobs:
           NEXT_IDX=$((DEX_COUNT + 1))
           mv classes.dex "classes${NEXT_IDX}.dex"
           touch -r time_ref AndroidManifest.xml
-          touch -r time_ref lib/arm64-v8a/libproxy.so
+          touch -r time_ref lib/arm64-v8a/*
           touch -r time_ref "classes${NEXT_IDX}.dex"
           cp original.apk final.apk
           zip -X final.apk AndroidManifest.xml
-          zip -X final.apk lib/arm64-v8a/libproxy.so
+          zip -X final.apk lib/arm64-v8a/*
           zip -jmX final.apk "classes${NEXT_IDX}.dex"
 
       - name: Zipalign
