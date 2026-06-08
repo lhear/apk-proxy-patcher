@@ -44,6 +44,10 @@ jobs:
           cp proxy_files/client lib/arm64-v8a/libproxy.so
           rm -rf proxy_files proxy.zip
 
+      - name: Copy C++ Lib
+        run: |
+          cp -n libc++_shared.so lib/arm64-v8a/libc++_shared.so
+
       - name: Compile Java Class
         run: |
           JAR_PATH="$ANDROID_HOME/platforms/android-36/android.jar"
